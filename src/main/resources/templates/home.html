@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <title>YESportfolio</title>
+  <!-- Favicon-->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  
+  <script type="text/javascript">
+    function testCommunicate(word) {
+      $.ajax({
+        type:'post',
+        url:'/home',   //데이터를 주고받을 파일 주소
+        data:{"word": word},   //위의 변수에 담긴 데이터를 전송해준다.
+        success : function(res){   //파일 주고받기가 성공했을 경우. data 변수 안에 값을 담아온다.
+          if(document.getElementById('searchData')) {
+            const div = document.getElementById('searchData');  
+            div.remove();
+          }
+
+          var html = "<div id='searchData'>";
+          var senses = res.senseList;
+          
+          // create explain table
+          html += "<table id='explain' class='display'>" + 
+            "<thead> <th>" + "검색명" + "</th> <th>" + "품사" + "</th> </thead>" +
+            "<tbody> <tr> <td>" + res.word + "</td> <td>" + res.pos + "</td> </tr> </tbody> </table>";
+          
+          // create mean table
+          html += "<table id='means' class='display'>";
+          html += "<thead> <th>" + "의미" + "</th> </thead> <tbody>";
+          
+          for (i = 0; i < senses.length; i++) {
+            var temp = JSON.stringify(senses[i].definition);
+            console.log(temp);
+            temp = (i+1).toString() + ". " + temp;
+            html += "<tr> <td>" + temp + "</td> </tr>";  
+          }
+          html += "</tbody> </table> </div>";
+          $("#data").append(html);
+          f.reset();
+          return;
+        }
+      });
+    }
+  </script>
+  
+  <script>
+    function voice() {
+        window.SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    // 인스턴스 생성
+    const recognition = new SpeechRecognition();
+
+    // true면 음절을 연속적으로 인식하나 false면 한 음절만 기록함
+    recognition.interimResults = true;
+    // 값이 없으면 HTML의 <html lang="en">을 참고합니다. ko-KR, en-US
+    recognition.lang = "ko-KR";
+    // true means continuous, and false means not continuous (single result each time.)
+    // true면 음성 인식이 안 끝나고 계속 됩니다.
+    recognition.continuous = false;
+    // 숫자가 작을수록 발음대로 적고, 크면 문장의 적합도에 따라 알맞은 단어로 대체합니다.
+    // maxAlternatives가 크면 이상한 단어도 문장에 적합하게 알아서 수정합니다.
+    recognition.maxAlternatives = 1000;
+
+    let p = document.createElement("p");
+    p.classList.add("para"); 
+
+    let words = document.querySelector(".words");
+    words.appendChild(p);
+    let speechToText = "";
+    recognition.addEventListener("result", (e) => {
+    let interimTranscript = "";
+    for (let i = e.resultIndex, len = e.results.length; i < len; i++) {
+        let transcript = e.results[i][0].transcript;
+        //console.log(transcript);
+        if (e.results[i].isFinal) {
+        speechToText += transcript;
+        } else {
+        interimTranscript += transcript;
+        }
+    }
+    console.log(interimTranscript);
+    if (interimTranscript.trim().length > 0) {
+      document.querySelector(".para").innerHTML = interimTranscript;
+      testCommunicate(interimTranscript.trim());
+      recognition.stop();
+    } else {
+      console.log(interimTranscript.trim());
+    }
+    });
+
+    // 음성 인식 시작
+    recognition.start();
+
+
+    // 음성인식이 끝나면 자동으로 재시작합니다.
+    // recognition.addEventListener("end", recognition.start);
+    }
+
+    
+    $(document).ready(function(){
+      $("#recordBtn").click(function(){
+        voice();
+      });
+    });
+
+</script>
+<!--
+<script>
+  function speak(text, opt_prop) {
+      if (typeof SpeechSynthesisUtterance === "undefined" || typeof window.speechSynthesis === "undefined") {
+          alert("이 브라우저는 음성 합성을 지원하지 않습니다.")
+          return
+      }
+      
+      window.speechSynthesis.cancel() // 현재 읽고있다면 초기화
+
+      const prop = opt_prop || {}
+
+      const speechMsg = new SpeechSynthesisUtterance()
+      speechMsg.rate = prop.rate || 1 // 속도: 0.1 ~ 10      
+      speechMsg.pitch = prop.pitch || 1 // 음높이: 0 ~ 2
+      speechMsg.lang = "ko-KR"
+      speechMsg.text = text
+      
+      // SpeechSynthesisUtterance에 저장된 내용을 바탕으로 음성합성 실행
+      window.speechSynthesis.speak(speechMsg)
+  }
+
+
+  // 이벤트 영역
+  const text = document.getElementById("readSent")
+  const btnRead = document.getElementById("startRead")
+
+  $(document).ready(function(){
+    $("#startRead").click(function(){
+      speak(text.value, {
+        rate: 1,
+        pitch: 1.2,
+      })
+    });
+  });
+</script> -->
+</head>
+<body>
+  <!-- Responsive navbar-->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">YESportfolio - SAD</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    </div>
+  </nav>
+  <!-- Page content-->
+  <div class="container">
+    <div class="text-center mt-5">
+        <h1 id="title">SAD - Speak At Dictionary</h1>
+        <div>
+            <div class="words" name="words" style="font-size: 50px;"></div>
+            <button id="recordBtn">Record</button>
+        </div>
+        <div id="data">
+        </div>
+    </div>
+</div>
+</body>
+</html>
